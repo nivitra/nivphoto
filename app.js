@@ -564,28 +564,30 @@ class PhotoelectricLaboratory {
     }
 
     calculatePlanckConstant() {
-        if (this.frequencyData.length < 2) return;
-        
-        // Linear regression: Vs = (h/e) * f - φ/e
-        let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-        const n = this.frequencyData.length;
-        
-        this.frequencyData.forEach(d => {
-            const x = d.frequency * 1e14; // Convert back to Hz
-            const y = d.stoppingPotential;
-            sumX += x;
-            sumY += y;
-            sumXY += x * y;
-            sumX2 += x * x;
-        });
-        
-        const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
-        const calculatedH = slope * this.constants.elementaryCharge; // h = slope * e
-        
-        const accuracy = (calculatedH / this.constants.planckConstant) * 100;
-        
-        this.elements.calculatedPlanck.textContent = `${calculatedH.toExponential(3)} eV·s`;
-        this.elements.accuracy.textContent = `${accuracy.toFixed(1)}%`;
+    if (this.frequencyData.length < 2) return;
+    
+    // Linear regression: Vs = (h/e) * f - φ/e
+    let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    const n = this.frequencyData.length;
+    
+    this.frequencyData.forEach(d => {
+        const x = d.frequency * 1e14; // Convert back to Hz
+        const y = d.stoppingPotential;
+        sumX += x;
+        sumY += y;
+        sumXY += x * y;
+        sumX2 += x * x;
+    });
+    
+    const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+    const calculatedH_Js = slope * this.constants.elementaryCharge; // h in J·s
+    const calculatedH_eVs = calculatedH_Js / this.constants.elementaryCharge; // Convert to eV·s
+    
+    const accuracy = Math.abs((calculatedH_eVs - this.constants.planckConstant) / this.constants.planckConstant) * 100;
+    
+    this.elements.calculatedPlanck.textContent = `${calculatedH_eVs.toExponential(3)} eV·s`;
+    this.elements.accuracy.textContent = `${accuracy.toFixed(1)}%`;
+}
     }
 
     updateDataTable() {
